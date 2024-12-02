@@ -52,7 +52,7 @@ df['date'] = pd.to_datetime(df['date'])
 # Configurando o Streamlit para visualização
 def main():
     st.sidebar.title('Menu de Navegação')
-    option = st.sidebar.radio('Selecione a visualização:', ['Página Inicial', 'Variação Histórica', 'Média Anual', 'Crises Econômicas', 'Previsão de Preços e Métricas de Performance'])
+    option = st.sidebar.radio('Selecione a visualização:', ['Página Inicial', 'Variação Histórica', 'Média Anual', 'Crises Econômicas', 'Previsões e Métricas de Performance', 'Previsão de Preços Dinâmica'])
     
     if option == 'Página Inicial':
         st.title('📊 Dashboard Interativo - Preço do Petróleo Brent - Fase 4 do Tech Challenge')
@@ -73,6 +73,37 @@ def main():
         fig1.update_yaxes(title_font=dict(size=14), tickfont=dict(size=12))
         fig1.update_xaxes(tickformat='%Y', fixedrange=True, showgrid=True)
         fig1.update_xaxes(tickformat='%Y', fixedrange=True, showgrid=True)
+
+        # Adicionar marcadores para as crises econômicas
+        crises = [
+            {'name': 'Crise Financeira de 2008', 'date': '2008-09-01'},
+            {'name': 'Queda dos Preços do Petróleo em 2014', 'date': '2014-06-01'},
+            {'name': 'Pandemia COVID-19', 'date': '2020-03-01'}
+        ]
+
+        for i, crise in enumerate(crises):
+            data_crise = pd.to_datetime(crise['date'])
+            ano = data_crise.year
+            mes = data_crise.month
+            
+            # Filtrar por ano e mês para garantir a precisão do posicionamento
+            df_crise = df[(df['date'].dt.year == ano) & (df['date'].dt.month == mes)]
+            if not df_crise.empty:
+                y_value = df_crise['price'].values[0]
+                fig1.add_annotation(
+                    x=data_crise,  # Usar a data completa para uma anotação precisa
+                    y=y_value,
+                    text=crise['name'],
+                    showarrow=True,
+                    arrowhead=2,
+                    ax=0,
+                    ay=-40 if i % 2 == 0 else 40,  # Alternar entre anotações acima e abaixo da linha do gráfico
+                    bgcolor='rgba(0, 0, 0, 0.8)',  # Fundo preto para melhor contraste
+                    bordercolor='white',
+                    font=dict(size=12, color='white'),
+                    arrowcolor='white'
+                )
+
         st.plotly_chart(fig1, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
         st.markdown("💡 **Insight 1**: O preço do petróleo apresenta picos significativos durante crises geopolíticas, como guerras ou tensões no Oriente Médio.")
     
@@ -91,6 +122,7 @@ def main():
     elif option == 'Crises Econômicas':
         # Gráfico 3: Análise de Crises Econômicas
         st.subheader('📉 Impacto de Crises Econômicas no Preço do Petróleo')
+
         crises = [
             {'name': 'Crise Financeira de 2008', 'start': '2008-09-01', 'end': '2009-06-30'},
             {'name': 'Pandemia COVID-19', 'start': '2020-03-01', 'end': '2020-12-31'},
@@ -111,9 +143,9 @@ def main():
             st.plotly_chart(fig3, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
             st.markdown(f"Insight: {crise['name']} teve um impacto significativo no preço, refletindo incertezas econômicas globais.")
 
-    elif option == 'Previsão de Preços e Métricas de Performance':
+    elif option == 'Previsões e Métricas de Performance':
         # Chamando a função de treinamento do modelo de Machine Learning
-        st.subheader('🔮 Previsão do Preço do Petróleo e Métricas de Performance')
+        st.subheader('🔮 Previsões e Métricas de Performance')
         st.markdown(
             """
             Utilizando um modelo de Machine Learning para prever o preço do petróleo com base nos dados históricos. 
@@ -166,12 +198,54 @@ def main():
             st.plotly_chart(fig4, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
             st.markdown("💡 **Insight**: O gráfico compara os preços reais do petróleo com os valores previstos pelo modelo, permitindo avaliar a precisão do modelo.")
 
-            # Previsão para o próximo dia
-            if st.button('Prever Preço para o Próximo Dia', key='prever_preco'):
-                ultimo_preco = df[df['date'] == df['date'].max()]['price'].values[-1]
-                proxima_data = datetime.datetime.now() + datetime.timedelta(days=1)
-                previsao = st.session_state['model'].predict([[ultimo_preco]])[0]
-                st.write(f"Previsão do preço do petróleo para {proxima_data.strftime('%Y-%m-%d')}: ${previsao:.2f}")
+    elif option == 'Previsão de Preços Dinâmica':
+        st.subheader('🌟 Previsão de Preço Dinâmica para os Próximos Dias 🌟')
+        st.markdown('Use o slider abaixo para selecionar o número de dias que deseja prever o preço do petróleo. A previsão será exibida em forma de gráfico e tabela para facilitar a visualização.')
 
+        # Previsão dinâmica de preço para os próximos dias
+        dias_para_prever = st.slider('Selecione o número de dias para prever', min_value=1, max_value=30, value=1)
+
+        if st.button('Prever Preço', key='prever_preco_dinamico'):
+            ultimo_preco = df[df['date'] == df['date'].max()]['price'].values[-1]
+            previsoes = []
+            data_atual = datetime.datetime.now()
+            
+            for i in range(1, dias_para_prever + 1):
+                proxima_data = data_atual + datetime.timedelta(days=i)
+                previsao = st.session_state['model'].predict([[ultimo_preco]])[0]
+                previsoes.append((proxima_data.strftime('%Y-%m-%d'), previsao))
+                ultimo_preco = previsao  # Atualizar o último preço com a previsão atual
+            
+            # Criar um DataFrame para as previsões
+            previsoes_df = pd.DataFrame(previsoes, columns=['Data', 'Preço Previsto (US$)'])
+            previsoes_df['Data'] = pd.to_datetime(previsoes_df['Data'])
+
+            # Limpar o espaço antes de renderizar um novo gráfico
+            grafico_espaco = st.empty()
+
+            # Criar um gráfico de linha para as previsões
+            fig5 = px.line(previsoes_df, x='Data', y='Preço Previsto (US$)', title='Previsão do Preço do Petróleo para os Próximos Dias')
+            fig5.update_layout(
+                title_font_size=20,
+                xaxis_title_font_size=16,
+                yaxis_title_font_size=16,
+                margin=dict(l=40, r=40, t=60, b=40),
+                xaxis=dict(
+                    tickformat='%b %d',
+                    tickangle=45,  # Inclinar os rótulos para melhor visualização
+                    nticks=min(len(previsoes), 30)  # Ajustar o número de marcas no eixo x para se adequar ao número de previsões (máx. 30)
+                )
+            )
+
+            # Exibir o gráfico no espaço reservado
+            grafico_espaco.plotly_chart(fig5, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
+
+            # Formatar a coluna 'Data' no formato 'dd/mm/aaaa'
+            previsoes_df['Data'] = previsoes_df['Data'].dt.strftime('%d/%m/%Y')
+
+            # Exibir a tabela de previsões
+            st.write('### Tabela de Previsões do Preço do Petróleo')
+            st.table(previsoes_df)
+            
 if __name__ == '__main__':
     main()

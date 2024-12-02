@@ -10,7 +10,9 @@ Este projeto consiste em um dashboard interativo desenvolvido com Streamlit para
 2. **Variação Histórica**: Visualização do preço do petróleo ao longo do tempo em um gráfico de linhas interativo.
 3. **Média Anual**: Gráfico de barras que exibe a média anual dos preços do petróleo, permitindo uma análise mais simplificada dos dados.
 4. **Crises Econômicas**: Análise do impacto de eventos econômicos significativos nos preços do petróleo, como a crise financeira de 2008, a pandemia de COVID-19, e outros.
-5. **Previsão de Preços**: Utilização de um modelo de Machine Learning (Random Forest Regressor) para prever preços futuros e exibir métricas de desempenho do modelo.
+5. **Previsões e Métricas de Performance**: Utilização de um modelo de Machine Learning (Random Forest Regressor) para prever preços futuros e exibir métricas de desempenho do modelo.
+6. **Previsão de Preços Dinâmica**: Ferramenta que permite prever o preço do petróleo para até 30 dias no futuro, utilizando um slider interativo. Esta funcionalidade destaca-se pela flexibilidade e a interatividade que oferece ao usuário.
+
 
 ### Como Executar
 
