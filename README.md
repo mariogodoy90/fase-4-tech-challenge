@@ -86,8 +86,3 @@ Para disponibilizar o dashboard no Streamlit Cloud, siga os seguintes passos det
 
 7. **URL do Dashboard**:
    - Após a conclusão do deploy, o Streamlit fornecerá uma URL pública que você pode compartilhar com outros para acesso ao dashboard.
-
-
-### Contato
-
-Em caso de dúvidas ou sugestões, entre em contato com o desenvolvedor do projeto.
