@@ -4,6 +4,8 @@
 
 Este projeto consiste em um dashboard interativo desenvolvido com Streamlit para explorar dados históricos do preço do petróleo Brent. O objetivo é fornecer insights visuais sobre a evolução dos preços e os fatores que os influenciam, utilizando uma interface fácil de usar.
 
+**URL**: https://fase-4-tech-challenge.streamlit.app/
+
 ### Funcionalidades
 
 1. **Página Inicial**: Visão geral do dashboard e instruções de uso.
