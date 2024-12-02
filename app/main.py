@@ -199,6 +199,11 @@ def main():
             st.markdown("💡 **Insight**: O gráfico compara os preços reais do petróleo com os valores previstos pelo modelo, permitindo avaliar a precisão do modelo.")
 
     elif option == 'Previsão de Preços Dinâmica':
+        # Verificar se o modelo foi treinado antes de prosseguir
+        if st.session_state.get('model') is None:
+            st.warning('⚠️ O modelo de Machine Learning precisa ser treinado antes de fazer previsões. Vá para a seção "Previsão de Preços e Métricas de Performance" e clique em "Treinar Modelo".')
+            st.stop()
+
         st.subheader('🌟 Previsão de Preço Dinâmica para os Próximos Dias 🌟')
         st.markdown('Use o slider abaixo para selecionar o número de dias que deseja prever o preço do petróleo. A previsão será exibida em forma de gráfico e tabela para facilitar a visualização.')
 
@@ -216,36 +221,37 @@ def main():
                 previsoes.append((proxima_data.strftime('%Y-%m-%d'), previsao))
                 ultimo_preco = previsao  # Atualizar o último preço com a previsão atual
             
-            # Criar um DataFrame para as previsões
-            previsoes_df = pd.DataFrame(previsoes, columns=['Data', 'Preço Previsto (US$)'])
-            previsoes_df['Data'] = pd.to_datetime(previsoes_df['Data'])
+            if dias_para_prever == 1:
+                # Exibir a previsão apenas em texto, sem gerar o gráfico
+                st.write(f"Previsão do preço do petróleo para {previsoes[0][0]}: ${previsoes[0][1]:.2f}")
+            else:
+                # Criar um DataFrame para as previsões
+                previsoes_df = pd.DataFrame(previsoes, columns=['Data', 'Preço Previsto (US$)'])
+                previsoes_df['Data'] = pd.to_datetime(previsoes_df['Data'])
 
-            # Limpar o espaço antes de renderizar um novo gráfico
-            grafico_espaco = st.empty()
+                # Limpar o espaço antes de renderizar um novo gráfico
+                grafico_espaco = st.empty()
 
-            # Criar um gráfico de linha para as previsões
-            fig5 = px.line(previsoes_df, x='Data', y='Preço Previsto (US$)', title='Previsão do Preço do Petróleo para os Próximos Dias')
-            fig5.update_layout(
-                title_font_size=20,
-                xaxis_title_font_size=16,
-                yaxis_title_font_size=16,
-                margin=dict(l=40, r=40, t=60, b=40),
-                xaxis=dict(
-                    tickformat='%b %d',
-                    tickangle=45,  # Inclinar os rótulos para melhor visualização
-                    nticks=min(len(previsoes), 30)  # Ajustar o número de marcas no eixo x para se adequar ao número de previsões (máx. 30)
+                # Criar um gráfico de linha para as previsões
+                fig5 = px.line(previsoes_df, x='Data', y='Preço Previsto (US$)', title='Previsão do Preço do Petróleo para os Próximos Dias')
+                fig5.update_layout(
+                    title_font_size=20,
+                    xaxis_title_font_size=16,
+                    yaxis_title_font_size=16,
+                    margin=dict(l=40, r=40, t=60, b=40),
+                    xaxis=dict(
+                        tickformat='%b %d',
+                        tickangle=45,  # Inclinar os rótulos para melhor visualização
+                        nticks=min(len(previsoes), 30)  # Ajustar o número de marcas no eixo x para se adequar ao número de previsões (máx. 30)
+                    )
                 )
-            )
 
-            # Exibir o gráfico no espaço reservado
-            grafico_espaco.plotly_chart(fig5, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
+                # Exibir o gráfico no espaço reservado
+                grafico_espaco.plotly_chart(fig5, use_container_width=True, config={'scrollZoom': False, 'displayModeBar': False})
 
-            # Formatar a coluna 'Data' no formato 'dd/mm/aaaa'
-            previsoes_df['Data'] = previsoes_df['Data'].dt.strftime('%d/%m/%Y')
+                # Exibir a tabela de previsões
+                st.write('### Tabela de Previsões do Preço do Petróleo')
+                st.table(previsoes_df)
 
-            # Exibir a tabela de previsões
-            st.write('### Tabela de Previsões do Preço do Petróleo')
-            st.table(previsoes_df)
-            
 if __name__ == '__main__':
     main()
